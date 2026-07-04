@@ -21,26 +21,26 @@ def _embed(query: str) -> list[float]:
     return _embed_client.embeddings.create(model=_embed_deployment, input=[query]).data[0].embedding
 
 
-def search_kpn_news(query: str) -> str:
+def search_ars_technica(query: str) -> str:
     """
-    Search KPN news articles and press releases.
-    Use for questions about recent KPN events, network updates, product launches,
-    company news, or partnerships.
+    Search Ars Technica articles.
+    Use for questions about technology, science, computing, gadgets, space,
+    and in-depth tech industry coverage.
     """
-    return hybrid_search(_embed(query), query, source="news", k=5)
+    return hybrid_search(_embed(query), query, source="ars", k=5)
 
 
-def search_kpn_vacancies(query: str) -> str:
+def search_bbc_news(query: str) -> str:
     """
-    Search KPN's current job openings.
-    Use for questions about available positions, required skills, salaries,
-    work locations, or career opportunities at KPN.
+    Search BBC world news articles.
+    Use for questions about current events, politics, world affairs,
+    business, and general breaking news.
     """
-    return hybrid_search(_embed(query), query, source="vacancies", k=5)
+    return hybrid_search(_embed(query), query, source="bbc", k=5)
 
 
-SYSTEM_MESSAGE = """You are a helpful assistant for KPN customers and job seekers.
-You have two tools: one for KPN news and one for KPN job vacancies.
+SYSTEM_MESSAGE = """You are a helpful news assistant.
+You have two tools: one for Ars Technica (technology and science) and one for BBC (world news).
 
 Rules:
 - Always call the relevant tool before answering. Never answer from memory.
@@ -63,7 +63,7 @@ def build_agent() -> Agent:
             api_key=os.environ["AZURE_OPENAI_API_KEY"],
             api_version=os.environ["AZURE_OPENAI_API_VERSION"],
         ),
-        tools=[search_kpn_news, search_kpn_vacancies],
+        tools=[search_ars_technica, search_bbc_news],
         system_message=SYSTEM_MESSAGE,
         markdown=True,
         output_schema=AgentResponse,

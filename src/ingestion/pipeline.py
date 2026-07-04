@@ -13,8 +13,8 @@ from src.db.store import DocChunk, upsert_chunks
 # documents here to optimize processing speed during development. In production, 
 # documents should be properly chunked with an overlap strategy and embedded separately.
 # Additionally, the batch size is capped to prevent hitting provider rate limits.
-MAX_TOKENS = 500 # Restricting token length speeds up ingestion, particularly for long vacancy descriptions.
-EMBED_BATCH_SIZE = 10 # Processes a maximum of 10 news articles and 10 vacancies per run.
+MAX_TOKENS = 500 # Restricting token length speeds up ingestion, particularly for long articles.
+EMBED_BATCH_SIZE = 10 # Processes a maximum of 10 articles per source per run.
 
 _enc = tiktoken.get_encoding("cl100k_base")
 _embed_deployment = os.environ.get("AZURE_EMBEDDING_DEPLOYMENT", "text-embedding-3-large")
@@ -67,10 +67,10 @@ def ingest_documents(documents: list[dict]) -> int:
 
 
 def run() -> None:
-    from src.ingestion.news_scraper import scrape_news
-    from src.ingestion.vacancies_scraper import scrape_vacancies
+    from src.ingestion.ars_scraper import scrape_ars
+    from src.ingestion.bbc_scraper import scrape_bbc
 
-    for label, docs in [("news", scrape_news()), ("vacancies", scrape_vacancies())]:
+    for label, docs in [("ars", scrape_ars()), ("bbc", scrape_bbc())]:
         total = ingest_documents(docs)
         print(f"[{label}] ingested {total} documents")
 

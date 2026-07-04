@@ -11,7 +11,7 @@ The architecture assumes Azure managed services. There is always the solution of
 ### Compute: Azure Container Apps
 
 - **API**: always-on, min 1 replica, autoscales on HTTP traffic
-- **Scraper**: Azure Container App job triggered by cron that runs every X hours to refresh news and vacancies from source, re-embeds changed documents, upserts into PostgreSQL.
+- **Scraper**: Azure Container App job triggered by cron that runs every X hours to refresh articles from the source feeds, re-embeds changed documents, upserts into PostgreSQL.
 
 > For more complex ingestion pipelines (multiple sources, transformation steps, retries, backfills), we can use an orchestration tool like **Airflow** or **Dagster**.
 

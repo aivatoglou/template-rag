@@ -37,8 +37,8 @@ def test_health(client):
 def test_query_returns_response(client):
     import src.api as api_module
     api_module._agent = MagicMock()
-    api_module._agent.run.return_value = _mock_result("There are 3 open roles.")
+    api_module._agent.run.return_value = _mock_result("Here is the latest news.")
 
-    resp = client.post("/query", json={"message": "any open jobs?"})
+    resp = client.post("/query", json={"message": "any tech news?"})
     assert resp.status_code == 200
-    assert resp.json()["response"] == "There are 3 open roles."
+    assert resp.json()["response"] == "Here is the latest news."

@@ -29,8 +29,8 @@ The API docs are available at `http://localhost:8000/docs`.
 
 Two scrapers run at startup to populate the database:
 
-- **News**: fetches the latest KPN articles from the RSS feed at `overons.kpn/nieuws/feed/en`
-- **Vacancies**: reads the vacancy sitemap at `jobs.kpn.com/sitemap.vacancy.xml`, fetches each listing, and extracts structured job data
+- **Ars Technica**: fetches the latest tech/science articles from the RSS feed at `feeds.arstechnica.com/arstechnica/index` (full article body via `content:encoded`)
+- **BBC News**: fetches the latest world news from the RSS feed at `feeds.bbci.co.uk/news/rss.xml`
 
 ## Retrieval
 
@@ -41,7 +41,7 @@ The agent is responsible for deciding if any tool call is needed, depending on t
 ## Limitations
 - The number of scraped documents from each source is limited to speed up the application startup time.
 - Documents are heavily truncated to reduce ingestion time. For long documents a proper chunker with chunk IDs and overlap is needed.
-- PostgreSQL FTS currently uses English stemming only. Because some scraped documents are in Dutch, this doesn't always work as expected. Ideally, we need a classifier to detect the document's language and apply the appropriate language configuration for stemming.
+- PostgreSQL FTS currently uses English stemming only. For non-English documents this works sub-optimally. Ideally, we need a classifier to detect the document's language and apply the appropriate language configuration for stemming.
 
 ## Endpoints
 
@@ -55,7 +55,7 @@ The agent is responsible for deciding if any tool call is needed, depending on t
 ```bash
 curl -X POST http://localhost:8000/query \
   -H "Content-Type: application/json" \
-  -d '{"message": "Are there any open positions for software engineers?"}'
+  -d '{"message": "What are the latest developments in AI?"}'
 ```
 
 Check the contents of the database:

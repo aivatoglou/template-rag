@@ -3,18 +3,28 @@
 import os
 
 from agno.agent import Agent
-from openai import AzureOpenAI
+from openai import AzureOpenAI, OpenAI
 from agno.models.azure import AzureOpenAI as AgnoAzureOpenAI
+from agno.models.openrouter import OpenRouter
 
 from src.db.store import hybrid_search
 from src.models import AgentResponse
 
-_embed_client = AzureOpenAI(
-    api_key=os.environ["AZURE_OPENAI_API_KEY"],
-    azure_endpoint=os.environ["AZURE_OPENAI_ENDPOINT"],
-    api_version=os.environ["AZURE_OPENAI_API_VERSION"],
-)
-_embed_deployment = os.environ.get("AZURE_EMBEDDING_DEPLOYMENT", "text-embedding-3-large")
+_USE_OPENROUTER = os.environ.get("LLM_PROVIDER", "azure").lower() == "openrouter"
+
+if _USE_OPENROUTER:
+    _embed_client = OpenAI(
+        api_key=os.environ["OPENROUTER_API_KEY"],
+        base_url="https://openrouter.ai/api/v1",
+    )
+    _embed_deployment = os.environ.get("OPENROUTER_EMBEDDING_MODEL", "openai/text-embedding-3-large")
+else:
+    _embed_client = AzureOpenAI(
+        api_key=os.environ["AZURE_OPENAI_API_KEY"],
+        azure_endpoint=os.environ["AZURE_OPENAI_ENDPOINT"],
+        api_version=os.environ["AZURE_OPENAI_API_VERSION"],
+    )
+    _embed_deployment = os.environ.get("AZURE_EMBEDDING_DEPLOYMENT", "text-embedding-3-large")
 
 
 def _embed(query: str) -> list[float]:
@@ -55,14 +65,20 @@ Response format (strictly JSON):
 """
 
 
+def _build_model():
+    if _USE_OPENROUTER:
+        return OpenRouter(id=os.environ.get("OPENROUTER_MODEL", "gpt-5.4-mini"))
+    return AgnoAzureOpenAI(
+        id=os.environ.get("AZURE_GPT_DEPLOYMENT", "gpt-4.1"),
+        azure_endpoint=os.environ["AZURE_OPENAI_ENDPOINT"],
+        api_key=os.environ["AZURE_OPENAI_API_KEY"],
+        api_version=os.environ["AZURE_OPENAI_API_VERSION"],
+    )
+
+
 def build_agent() -> Agent:
     return Agent(
-        model=AgnoAzureOpenAI(
-            id=os.environ.get("AZURE_GPT_DEPLOYMENT", "gpt-4.1"),
-            azure_endpoint=os.environ["AZURE_OPENAI_ENDPOINT"],
-            api_key=os.environ["AZURE_OPENAI_API_KEY"],
-            api_version=os.environ["AZURE_OPENAI_API_VERSION"],
-        ),
+        model=_build_model(),
         tools=[search_ars_technica, search_bbc_news],
         system_message=SYSTEM_MESSAGE,
         markdown=True,

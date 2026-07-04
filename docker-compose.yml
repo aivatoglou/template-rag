@@ -24,10 +24,13 @@ services:
       - POSTGRES_DB
       - POSTGRES_USER
       - POSTGRES_PASSWORD
+      - LLM_PROVIDER
       - AZURE_OPENAI_ENDPOINT
       - AZURE_OPENAI_API_KEY
       - AZURE_OPENAI_API_VERSION
       - AZURE_EMBEDDING_DEPLOYMENT
+      - OPENROUTER_API_KEY
+      - OPENROUTER_EMBEDDING_MODEL
     depends_on:
       postgres:
         condition: service_healthy
@@ -41,11 +44,15 @@ services:
       - POSTGRES_DB
       - POSTGRES_USER
       - POSTGRES_PASSWORD
+      - LLM_PROVIDER
       - AZURE_OPENAI_ENDPOINT
       - AZURE_OPENAI_API_KEY
       - AZURE_OPENAI_API_VERSION
       - AZURE_GPT_DEPLOYMENT
       - AZURE_EMBEDDING_DEPLOYMENT
+      - OPENROUTER_API_KEY
+      - OPENROUTER_MODEL
+      - OPENROUTER_EMBEDDING_MODEL
     ports:
       - "8000:8000"
     depends_on:

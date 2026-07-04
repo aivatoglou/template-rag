@@ -5,24 +5,32 @@ import time
 from typing import Generator
 
 import tiktoken
-from openai import AzureOpenAI, RateLimitError
+from openai import AzureOpenAI, OpenAI, RateLimitError
 
 from src.db.store import DocChunk, upsert_chunks
 
-# text-embedding-3-large supports up to 8192 tokens per document. However, we truncate 
-# documents here to optimize processing speed during development. In production, 
+# text-embedding-3-large supports up to 8192 tokens per document. However, we truncate
+# documents here to optimize processing speed during development. In production,
 # documents should be properly chunked with an overlap strategy and embedded separately.
 # Additionally, the batch size is capped to prevent hitting provider rate limits.
 MAX_TOKENS = 500 # Restricting token length speeds up ingestion, particularly for long articles.
 EMBED_BATCH_SIZE = 10 # Processes a maximum of 10 articles per source per run.
 
 _enc = tiktoken.get_encoding("cl100k_base")
-_embed_deployment = os.environ.get("AZURE_EMBEDDING_DEPLOYMENT", "text-embedding-3-large")
-_openai_client = AzureOpenAI(
-    api_key=os.environ["AZURE_OPENAI_API_KEY"],
-    azure_endpoint=os.environ["AZURE_OPENAI_ENDPOINT"],
-    api_version=os.environ["AZURE_OPENAI_API_VERSION"],
-)
+
+if os.environ.get("LLM_PROVIDER", "azure").lower() == "openrouter":
+    _embed_deployment = os.environ.get("OPENROUTER_EMBEDDING_MODEL", "openai/text-embedding-3-large")
+    _openai_client = OpenAI(
+        api_key=os.environ["OPENROUTER_API_KEY"],
+        base_url="https://openrouter.ai/api/v1",
+    )
+else:
+    _embed_deployment = os.environ.get("AZURE_EMBEDDING_DEPLOYMENT", "text-embedding-3-large")
+    _openai_client = AzureOpenAI(
+        api_key=os.environ["AZURE_OPENAI_API_KEY"],
+        azure_endpoint=os.environ["AZURE_OPENAI_ENDPOINT"],
+        api_version=os.environ["AZURE_OPENAI_API_VERSION"],
+    )
 
 
 def _truncate(text: str) -> str:
